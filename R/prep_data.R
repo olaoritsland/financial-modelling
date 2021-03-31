@@ -6,7 +6,7 @@
 #' @param columns_to_remove 
 #'
 #' @return
-#' @importFrom tidyr pivot_longer pivot_wider
+#' @importFrom tidyr pivot_longer pivot_wider replace_na
 #' @importFrom janitor clean_names
 #' @import dplyr
 #' @export
@@ -24,7 +24,7 @@ prep_data <- function(data,
   data <- data %>% 
     mutate(row_number = row_number()) %>%
     rename(info = RESULT) %>% 
-    mutate(across(everything(), ~replace_na(.x, 0)))
+    mutate(across(everything(), ~tidyr::replace_na(.x, 0)))
   
   
   # identify breakpoints

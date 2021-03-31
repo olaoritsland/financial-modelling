@@ -29,14 +29,14 @@ wacc <- function(debt_to_equity, cost_of_debt, cost_of_equity, tax_rate) {
 #'
 #' @param rf 
 #' @param beta 
-#' @param expected_market_return 
+#' @param market_risk_premium 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-cost_of_equity <- function(rf, beta, expected_market_return) {
+cost_of_equity <- function(rf, beta, market_risk_premium) {
   
-  rf + beta * (expected_market_return - rf)
+  rf + beta * market_risk_premium
   
 }

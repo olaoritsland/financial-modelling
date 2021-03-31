@@ -2,7 +2,7 @@
 # package
 devtools::load_all()
 
-# input
+# input ------------------------------------------------------------------------
 
 file = "data/salmar.xlsx"
 tax_rate = 0.22
@@ -10,6 +10,8 @@ tax_rate = 0.22
 # read raw data ----------------------------------------------------------------
 
 data <- readxl::read_xlsx(file, sheet = "Group accounting", skip = 2) 
+
+data_rf <- risk_free_rate("Norway")
 
 # income statement -------------------------------------------------------------
 
@@ -39,7 +41,7 @@ plot_group(revenues)
 costs <- create_groups(data = income_statement, 
                        n_groups = 5, 
                        select_contains = c("expense", "cost")) %>% 
-  filter(!str_detect(name, "finan"))
+  filter(!stringr::str_detect(name, "finan"))
 
 plot_group(costs)
 
@@ -109,6 +111,7 @@ df_analysis <- income_statement %>%
                      invested_capital,
                      goodwill_intangible_assets), 
             by = "year") %>% 
+  left_join(data_rf, by = "year") %>% 
   mutate(
     roe = net_result_profit_for_the_year / total_equity, # TODO: vurder snitt eller lag()
     roic = nopat / invested_capital,
@@ -119,7 +122,29 @@ df_analysis <- income_statement %>%
     net_borrowing_costs = net_financial_expenses_after_tax / net_debt,
     financial_leverage = net_debt / total_equity,
     spread = roic - net_borrowing_costs, # TODO: bedre navn: 
-    non_operating_return = financial_leverage * spread
+    non_operating_return = financial_leverage * spread,
+    
+    unlevered_beta = unlevered_beta(industry = "Farming/Agriculture", 
+                                    time_period = "last"), # consider parameter
+    industry_debt_to_equity = debt_to_equity(industry = "Farming/Agriculture"),
+    levered_beta = (1 + industry_debt_to_equity) * unlevered_beta,
+    
+    cost_of_equity = cost_of_equity(rf = ten_year_gov_bond_rate, 
+                                    beta = levered_beta, 
+                                    market_risk_premium = 0.05), # TODO historisk (har vært 5 % lenge)
+    
+    wacc = wacc(debt_to_equity = industry_debt_to_equity,
+                cost_of_debt = 0.02,               # TODO
+                cost_of_equity = cost_of_equity,
+                tax_rate = tax_rate),  # TODO historisk
+    
+    # internal benchmark
+    eva = (roic - wacc) * invested_capital,
+    residual_income = (roe - cost_of_equity) * total_equity
+    
+    # external benchmark
+    # industry_roic
+    # industry_roe
     
   )
 
@@ -129,36 +154,16 @@ df_analysis <- income_statement %>%
 plot_roe_decomposed(df_analysis)
 
 
-# parameters
-unlevered_beta <- unlevered_beta(industry = "Farming/Agriculture", time_period = "last") 
-industry_debt_to_equity <- debt_to_equity(industry = "Farming/Agriculture")
-levered_beta <- (1 + industry_debt_to_equity) * unlevered_beta
-
-cost_of_equity <- cost_of_equity(rf = 0.01, beta = levered_beta, expected_market_return = 0.06) # TODO E[rm]
-
-wacc <- wacc(debt_to_equity = industry_debt_to_equity,
-             cost_of_debt = 0.02, 
-             cost_of_equity = cost_of_equity,
-             tax_rate = 0.22)
-
-# benchmark --------------------------------------------------------------------
-
-# internal
-
-roe = df_analysis %>% filter(year == 2019) %>% pull(roe)
-roic = df_analysis %>% filter(year == 2019) %>% pull(roic)
-
-roe - cost_of_equity
-roic - wacc  
-
-
-
 # TODO:
 # 
 # Get revenues and cost break-down from financial report (pdf)
 # Get sentiment from financial report
 # Decomposed ROE with numbers (tree)
 # EVA
+# Legg til risk free rate hvert år og beregn ke og wacc for hver observasjon, samt EVA
+# Legg inn antagelser/forutsetninger
+# test denne: EVA = NOPAT - (Invested Capital * WACC)
+# legg til premium/discounts i avkastningskrav (kontroll/likviditet)
 
 
 
