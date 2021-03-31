@@ -13,8 +13,15 @@ data <- readxl::read_xlsx(file, sheet = "Group accounting", skip = 2)
 
 # income statement -------------------------------------------------------------
 
+# TODO: NI = net_result_profit_for_the_year vs. ordinary_result vs. før/etter minority interest
+
 income_statement <- prep_data(data, balance_sheet = FALSE) %>% 
-  mutate(nopat = operating_profit_loss * (1 - tax_rate))
+  mutate(
+    nopat = operating_profit_loss * (1 - tax_rate),
+    # non_operating_tax_expense = (total_financial_expenses + extraordinary_expenses) * tax_rate,
+    # nopat = operating_profit_loss - tax_on_ordinary_result - non_operating_tax_expense, # kun for første året
+    operating_margin = operating_profit_loss / total_operating_income
+    )
 
 # EDA --
 
@@ -35,6 +42,8 @@ costs <- create_groups(data = income_statement,
   filter(!str_detect(name, "finan"))
 
 plot_group(costs)
+
+
 
 
 
@@ -66,7 +75,7 @@ balance_sheet = prep_data(data, balance_sheet = TRUE) %>%
     interest_bearing_assets = 
       rowSums(across(.cols = all_of(interest_bearing_assets))),
     
-    net_debt = interest_bearing_assets - interest_bearing_liabilities,
+    net_debt = interest_bearing_liabilities - interest_bearing_assets,
     
     invested_capital = total_equity + net_debt
     )
@@ -87,7 +96,7 @@ df_analysis <- income_statement %>%
          cost_of_stocks,
          wages_salaries_and_social_security_expenses,
          other_operating_expenses,
-         ordinary_result,
+         net_result_profit_for_the_year,
          ordinary_depreciation,
          nopat
          ) %>% 
@@ -101,20 +110,31 @@ df_analysis <- income_statement %>%
                      goodwill_intangible_assets), 
             by = "year") %>% 
   mutate(
-    roe = ordinary_result / lag(total_equity),
+    roe = net_result_profit_for_the_year / total_equity, # TODO: vurder snitt eller lag()
     roic = nopat / invested_capital,
     roic_ex_gw = nopat / (invested_capital - goodwill_intangible_assets),
-    # TODO: decompose:
-    # net_operating_profit_margin = nopat / total_operating_income,
-    # net_operating_asset_turnover = total_operating_income / invested_capital
+    net_operating_profit_margin = nopat / total_operating_income,
+    net_operating_asset_turnover = total_operating_income / invested_capital,
+    net_financial_expenses_after_tax = nopat - net_result_profit_for_the_year, # motsatt?
+    net_borrowing_costs = net_financial_expenses_after_tax / net_debt,
+    financial_leverage = net_debt / total_equity,
+    spread = roic - net_borrowing_costs, # TODO: bedre navn: 
+    non_operating_return = financial_leverage * spread
+    
   )
+
+# plot -------------------------------------------------------------------------
+
+
+plot_roe_decomposed(df_analysis)
+
 
 # parameters
 unlevered_beta <- unlevered_beta(industry = "Farming/Agriculture", time_period = "last") 
 industry_debt_to_equity <- debt_to_equity(industry = "Farming/Agriculture")
 levered_beta <- (1 + industry_debt_to_equity) * unlevered_beta
 
-cost_of_equity <- cost_of_equity(rf = 0.01, beta = levered_beta, expected_market_return = 0.06) #TODO E[rm]
+cost_of_equity <- cost_of_equity(rf = 0.01, beta = levered_beta, expected_market_return = 0.06) # TODO E[rm]
 
 wacc <- wacc(debt_to_equity = industry_debt_to_equity,
              cost_of_debt = 0.02, 
@@ -130,3 +150,17 @@ roic = df_analysis %>% filter(year == 2019) %>% pull(roic)
 
 roe - cost_of_equity
 roic - wacc  
+
+
+
+# TODO:
+# 
+# Get revenues and cost break-down from financial report (pdf)
+# Get sentiment from financial report
+# Decomposed ROE with numbers (tree)
+# EVA
+
+
+
+# ROE > ROIC --> belåner operasjonelle eiendeler som gir avkastning > finansieringskostnaden (kd)
+

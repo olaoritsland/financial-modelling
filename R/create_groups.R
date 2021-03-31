@@ -7,7 +7,7 @@
 #'
 #' @return
 #' @import dplyr
-#' @importFrom tidyr picot_longer
+#' @importFrom tidyr pivot_longer
 #' @export
 #'
 #' @examples
