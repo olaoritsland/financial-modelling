@@ -4,14 +4,14 @@
 \alias{cost_of_equity}
 \title{Cost of equity}
 \usage{
-cost_of_equity(rf, beta, expected_market_return)
+cost_of_equity(rf, beta, market_risk_premium)
 }
 \arguments{
 \item{rf}{}
 
 \item{beta}{}
 
-\item{expected_market_return}{}
+\item{market_risk_premium}{}
 }
 \value{
 

@@ -1,7 +1,6 @@
 #' Theme
 #'
 #' @return
-#' @export
 #'
 #' @examples
 theme_lab <- function () { 

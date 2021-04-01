@@ -10,3 +10,8 @@
 # Inspiration from AI analytics
 # Discount rate (WACC) using factors?
 
+# However, the EVA calculation relies heavily on the amount of invested capital 
+# and is best used for asset-rich companies that are stable or mature. 
+
+# Companies with intangible assets, such as technology businesses, 
+# may not be good candidates for an EVA evaluation.

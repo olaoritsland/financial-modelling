@@ -1,5 +1,6 @@
 
 #' Plot ROE decomposed
+#' 
 #'
 #' @param data 
 #'

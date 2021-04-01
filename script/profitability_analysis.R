@@ -6,16 +6,16 @@ devtools::load_all()
 
 file = "data/salmar.xlsx"
 tax_rate = 0.22
+industry = "Farming/Agriculture" # til damodaran
 
 # read raw data ----------------------------------------------------------------
 
 data <- readxl::read_xlsx(file, sheet = "Group accounting", skip = 2) 
 
 data_rf <- risk_free_rate("Norway")
+data_skatt <- readr::read_delim("data/skattesats_norge.csv", delim = ";")
 
 # income statement -------------------------------------------------------------
-
-# TODO: NI = net_result_profit_for_the_year vs. ordinary_result vs. før/etter minority interest
 
 income_statement <- prep_data(data, balance_sheet = FALSE) %>% 
   mutate(
@@ -85,7 +85,6 @@ balance_sheet = prep_data(data, balance_sheet = TRUE) %>%
 
 
 
-# TODO: plot balance sheet (treemap)
 
 # measures ---------------------------------------------------------------------
 
@@ -112,6 +111,7 @@ df_analysis <- income_statement %>%
                      goodwill_intangible_assets), 
             by = "year") %>% 
   left_join(data_rf, by = "year") %>% 
+  left_join(data_skatt, by = "year") %>% 
   mutate(
     roe = net_result_profit_for_the_year / total_equity, # TODO: vurder snitt eller lag()
     roic = nopat / invested_capital,
@@ -124,9 +124,9 @@ df_analysis <- income_statement %>%
     spread = roic - net_borrowing_costs, # TODO: bedre navn: 
     non_operating_return = financial_leverage * spread,
     
-    unlevered_beta = unlevered_beta(industry = "Farming/Agriculture", 
+    unlevered_beta = unlevered_beta(industry = industry, 
                                     time_period = "last"), # consider parameter
-    industry_debt_to_equity = debt_to_equity(industry = "Farming/Agriculture"),
+    industry_debt_to_equity = debt_to_equity(industry = industry),
     levered_beta = (1 + industry_debt_to_equity) * unlevered_beta,
     
     cost_of_equity = cost_of_equity(rf = ten_year_gov_bond_rate, 
@@ -140,11 +140,12 @@ df_analysis <- income_statement %>%
     
     # internal benchmark
     eva = (roic - wacc) * invested_capital,
-    residual_income = (roe - cost_of_equity) * total_equity
+    residual_income = (roe - cost_of_equity) * total_equity,
     
-    # external benchmark
-    # industry_roic
-    # industry_roe
+    revenue_growth = total_operating_income / lag(total_operating_income) - 1,
+    cost_growth = total_operating_expenses / lag(total_operating_expenses) - 1
+    
+    
     
   )
 
@@ -152,20 +153,34 @@ df_analysis <- income_statement %>%
 
 
 plot_roe_decomposed(df_analysis)
+plot_value_creation(df_analysis, avkastning = "roic", avkastningskrav = "wacc")
+plot_value_creation(df_analysis, avkastning = "roe", avkastningskrav = "cost_of_equity")
+plot_growth(df_analysis, no_of_years = 5)
+
+  
+  
+  
 
 
 # TODO:
 # 
-# Get revenues and cost break-down from financial report (pdf)
-# Get sentiment from financial report
-# Decomposed ROE with numbers (tree)
-# EVA
-# Legg til risk free rate hvert år og beregn ke og wacc for hver observasjon, samt EVA
+# Inntekts- og kostnadssammensetning fra financial report (pdf)
+# Sentimentanalyse baser på financial report
+# Dekomponert ROE i treplott (med tall)
+# Risikofri rente hvert år for europeisk og amerikansk 10-åring
+# Cost of debt (bond rating)
+# Markedets risikopremie historisk (og sammenheng mellom E[rm] og MRP)
 # Legg inn antagelser/forutsetninger
-# test denne: EVA = NOPAT - (Invested Capital * WACC)
-# legg til premium/discounts i avkastningskrav (kontroll/likviditet)
-
-
-
-# ROE > ROIC --> belåner operasjonelle eiendeler som gir avkastning > finansieringskostnaden (kd)
+# Kegg til premium/discounts i avkastningskrav (kontroll/likviditet)
+# Funksjon som henter utvikling i råvarepriser som er aktuelle (+ forwardkurve)
+# Plot utbytte og eva for å vurdere management
+# Plot balansen (treemap)
+# Legg inn en andel av cashen som operasjonell (se plot?)
+# Legg inn to-års snitt eller lag() av egenkapital for beregning av roe
+# NI = net_result_profit_for_the_year vs. ordinary_result vs. før/etter minority interest
+# Plot debt to equity (eller flytt til eget script)
+# Rename script (vekst, lønnsomhet og kapitalstruktur)
+# Legg inn ekstern benchmark på roe og roic (snitt/median av peers)
+# Plott (med peers) y = EBIT-margin x = revenue growth (cagr last x years), size = revenues
+# Legg sammen flere plottefunksjoner i en fil
 
