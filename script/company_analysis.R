@@ -91,6 +91,7 @@ df_analysis <- income_statement %>%
               select(year,
                      total_equity,
                      total_assets,
+                     total_fixed_assets,
                      interest_bearing_liabilities,
                      interest_bearing_assets,
                      operating_current_assets,
@@ -140,5 +141,10 @@ df_analysis <- income_statement %>%
     cost_growth = total_operating_expenses / lag(total_operating_expenses) - 1,
     
     # liquidity
-    net_working_capital = operating_current_assets - operating_current_liabilities
+    net_working_capital = operating_current_assets - operating_current_liabilities,
+    increase_net_working_capital = net_working_capital - lag(net_working_capital),
+    capex = total_fixed_assets - lag(total_fixed_assets) + ordinary_depreciation,
+    depreciation_rate = ordinary_depreciation / total_fixed_assets,
+    ppe_rate = total_fixed_assets / total_operating_income,
+    nwc_to_revenues = net_working_capital / total_operating_income
   )

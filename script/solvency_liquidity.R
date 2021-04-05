@@ -27,7 +27,7 @@ df_analysis %>%
     # liquidity_current_reserve_ratio = (financial_assets + unused_lines_of_credit) / current_liabilities,
     
     # Is the firm liqudity efficient?
-    nwc_to_revenues = net_working_capital / total_operating_income,
+    nwc_to_revenues = net_working_capital / total_operating_income, # TODO remove?
     
   # Short-term:
   
