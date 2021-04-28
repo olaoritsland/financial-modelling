@@ -5,7 +5,8 @@ source("script/oda/company_analysis.R")
 
 base_year = max(df_analysis$year)
 explicit_forecast_period = 10
-growth_perpetuity = 0.02
+expected_inflation = 0.02 # inflasjonsmål
+growth_real = 0.001
 
 
 
@@ -28,7 +29,7 @@ estimate_fcff(data = df_analysis,
 estimate_market_value(df_forecast, 
                       base_year, 
                       explicit_forecast_period = explicit_forecast_period, 
-                      growth_perpetuity = growth_perpetuity)
+                      growth_perpetuity = growth_real + expected_inflation)
 
 
 
