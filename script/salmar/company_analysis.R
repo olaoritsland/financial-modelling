@@ -6,6 +6,8 @@ devtools::load_all()
 
 file = "data/salmar.xlsx"
 tax_rate = 0.22
+market_risk_premium = 0.05
+credit_spread = 0.0118
 industry = "Farming/Agriculture" # til damodaran
 
 interest_bearing_liabilities <- c("long_term_pension_commitments",
@@ -126,10 +128,10 @@ df_analysis <- income_statement %>%
     
     cost_of_equity = cost_of_equity(rf = ten_year_gov_bond_rate, 
                                     beta = levered_beta, 
-                                    market_risk_premium = 0.05), # TODO historisk (har vært 5 % lenge)
+                                    market_risk_premium = market_risk_premium), # TODO historisk (har vært 5 % lenge)
     
     wacc = wacc(debt_to_equity = industry_debt_to_equity,
-                cost_of_debt = 0.02,               # TODO
+                cost_of_debt = ten_year_gov_bond_rate + credit_spread,
                 cost_of_equity = cost_of_equity,
                 tax_rate = tax_rate),  # TODO historisk
     

@@ -1,6 +1,6 @@
 
 # source
-source("script/company_analysis.R")
+source("script/salmar/company_analysis.R")
 
 # income statement -------------------------------------------------------------
 
