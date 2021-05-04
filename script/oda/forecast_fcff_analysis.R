@@ -26,11 +26,14 @@ estimate_fcff(data = df_analysis,
 
 # Estimate value
 
-estimate_market_value(df_forecast, 
-                      base_year, 
-                      explicit_forecast_period = explicit_forecast_period, 
-                      growth_perpetuity = growth_real + expected_inflation)
+market_value <-  
+  estimate_market_value(df_forecast, 
+                        base_year, 
+                        explicit_forecast_period = explicit_forecast_period, 
+                        growth_perpetuity = growth_real + expected_inflation)
 
+# Equity bridge
+plot_equity_bridge(market_value)
 
 
 

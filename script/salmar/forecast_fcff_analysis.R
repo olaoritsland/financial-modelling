@@ -22,12 +22,15 @@ df_forecast <-
 
 # Estimate value
 
-estimate_market_value(df_forecast, 
-                      base_year, 
-                      explicit_forecast_period = explicit_forecast_period, 
-                      growth_perpetuity = growth_real + expected_inflation)
+market_value <- 
+  estimate_market_value(df_forecast, 
+                        base_year, 
+                        explicit_forecast_period = explicit_forecast_period, 
+                        growth_perpetuity = growth_real + expected_inflation)
 
+# Plot equity bridge
 
+plot_equity_bridge(market_value)
 
 
 

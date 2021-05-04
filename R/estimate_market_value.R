@@ -14,7 +14,6 @@
 #' @examples
 estimate_market_value <- function(data, base_year, explicit_forecast_period, growth_perpetuity) {
   
-  
   final_fcff <- data %>% 
     filter(year == base_year + explicit_forecast_period) %>% 
     pull(fcff)
@@ -33,7 +32,8 @@ estimate_market_value <- function(data, base_year, explicit_forecast_period, gro
   market_value_of_equity = (enterprise_value - net_debt)
   
   tibble::tibble(
-    final_fcff = final_fcff,
+    terminal_value_discounted = terminal_value_discounted,
+    sum_discounted_fcff = sum_discounted_fcff,
     wacc = cost_of_capital,
     net_debt = net_debt,
     enterprise_value = enterprise_value,
